@@ -3,7 +3,7 @@ name: testing
 
 steps:
 - name: install
-  image: ruby
+  image: ruby:2.6.3
   group: testing
   environment:
     RAILS_ENV: test
@@ -11,39 +11,31 @@ steps:
   commands:
   - ruby -v
   - gem -v
-  - bundle -v
   - gem install bundler
-  - echo $TEST
+  - bundle -v
   # bundle，檔案位置設定在 vendor/bundle
   - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
+  - bundle exec rails -v
+  - bundle exec rake db:create db:migrate --trace
 
 - name: rspec
-  image: ruby
+  image: ruby:2.6.3
   group: testing
   environment:
     RAILS_ENV: test
     RAKE_ENV: test
   commands:
-  - pwd;ls
-  # - gem install bundler
+  - gem install bundler
   - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
   - bundle exec rails -v
   - echo $RAILS_ENV
   - echo $RAKE_ENV
   - bundle exec rspec --color #--tag ~@feature
 
-# - name: rebuild-cache
-#   image: drillster/drone-volume-cache
-#   group: cleanup
-#   rebuild: true
-#   mount:
-#     - ./vendor
-#   # Mount the cache volume, needs "Trusted"
-#   volumes:
-#   - name: cache
-#     path: /tmp/cache
-#
-# volumes:
-#   - name: cache
-#     host:
-#       path: /tmp/cache
+services:
+- name: db
+  image: mysql:5.7
+  ports:
+  - 3306
+  environment:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
