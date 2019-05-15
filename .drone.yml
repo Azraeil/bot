@@ -34,7 +34,6 @@ steps:
 
 - name: discord
   image: azraeil/drone-discord
-  pull: always
   settings:
     webhook_id:
       from_secret: discord_webhook_id
