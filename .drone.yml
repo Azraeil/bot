@@ -5,9 +5,6 @@ steps:
 - name: install
   image: ruby:2.6.3
   group: testing
-  volumes:
-    - name: bundle
-      path: /usr/local/bundle
   environment:
     RAILS_ENV: test
     RAKE_ENV: test
@@ -24,9 +21,6 @@ steps:
 - name: rspec
   image: ruby:2.6.3
   group: testing
-  volumes:
-    - name: bundle
-      path: /usr/local/bundle
   environment:
     RAILS_ENV: test
     RAKE_ENV: test
@@ -58,7 +52,3 @@ services:
   - 3306
   environment:
     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-
-volumes:
-  - name: bundle
-    temp: {}
