@@ -1,24 +1,9 @@
 kind: pipeline
-name: testing
+name: default
 
 steps:
-- name: install
+- name: test
   image: ruby:2.4.5
   commands:
-  - ruby -v
-  - gem -v
-  - bundle -v
-  - gem install bundler
-  - echo $TEST
-  # bundle，檔案位置設定在 vendor/bundle
-  - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
-
-- name: rspec
-  image: ruby:2.4.5
-  group: testing
-  environment:
-    RAILS_ENV: test
-    RAKE_ENV: test
-  commands:
-    - echo $RAILS_ENV
-    - bundle exec rspec --color #--tag ~@feature
+  - bundle install --jobs=3 --retry=3
+  - rake
