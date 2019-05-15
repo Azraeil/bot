@@ -2,17 +2,6 @@ kind: pipeline
 name: testing
 
 steps:
-# 將一些不需要重複 build 的檔案 cache 起來 e.g. gem, node_module
-- name: restore-cache
-  image: drillster/drone-volume-cache
-  restore: true
-  mount:
-    - ./vendor
-  # Mount the cache volume, needs "Trusted"
-  volumes:
-  - name: bundle
-    path: /usr/local/bundle
-
 - name: install
   image: ruby:2.6.3
   group: testing
@@ -27,7 +16,7 @@ steps:
   - gem -v
   - gem install bundler
   - bundle -v
-  # bundle 檔案位置指定在 /usr/local/bundle
+  # bundle，檔案位置設定在 vendor/bundle
   - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
   - bundle exec rails -v
   - bundle exec rake db:create db:migrate --trace
@@ -49,20 +38,8 @@ steps:
   - echo $RAKE_ENV
   - bundle exec rspec --color #--tag ~@feature
 
-- name: rebuild-cache
-  image: drillster/drone-volume-cache
-  group: cleanup
-  rebuild: true
-  mount:
-    - ./vendor
-  # Mount the cache volume, needs "Trusted"
-  volumes:
-  - name: bundle
-    path: /usr/local/bundle
-
 - name: discord
   image: azraeil/drone-discord
-  group: notify
   pull: always
   settings:
     webhook_id:
@@ -84,5 +61,4 @@ services:
 
 volumes:
   - name: bundle
-    host:
-      path: /usr/local/bundle
+    temp: {}
