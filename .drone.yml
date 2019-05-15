@@ -3,11 +3,7 @@ name: testing
 
 steps:
 - name: install
-  image: ruby
-  group: testing
-  environment:
-    RAILS_ENV: test
-    RAKE_ENV: test
+  image: ruby:2.4.5
   commands:
   - ruby -v
   - gem -v
@@ -18,32 +14,11 @@ steps:
   - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
 
 - name: rspec
-  image: ruby
+  image: ruby:2.4.5
   group: testing
   environment:
     RAILS_ENV: test
     RAKE_ENV: test
   commands:
-  - pwd;ls
-  # - gem install bundler
-  - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
-  - bundle exec rails -v
-  - echo $RAILS_ENV
-  - echo $RAKE_ENV
-  - bundle exec rspec --color #--tag ~@feature
-
-# - name: rebuild-cache
-#   image: drillster/drone-volume-cache
-#   group: cleanup
-#   rebuild: true
-#   mount:
-#     - ./vendor
-#   # Mount the cache volume, needs "Trusted"
-#   volumes:
-#   - name: cache
-#     path: /tmp/cache
-#
-# volumes:
-#   - name: cache
-#     host:
-#       path: /tmp/cache
+    - echo $RAILS_ENV
+    - bundle exec rspec --color #--tag ~@feature
