@@ -32,18 +32,6 @@ steps:
   - echo $RAKE_ENV
   - bundle exec rspec --color #--tag ~@feature
 
-- name: discord
-  image: appleboy/drone-discord
-  settings:
-    webhook_id:
-      from_secret: discord_webhook_id
-    webhook_token:
-      from_secret: discord_webhook_token    
-  when:
-    status:
-    - success
-    - failure
-
 services:
 - name: db
   image: mysql:5.7
