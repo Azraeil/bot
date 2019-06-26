@@ -39,12 +39,20 @@ gem 'bootsnap', '>= 1.1.0', require: false
 # Simple, Heroku-friendly Rails app configuration using ENV and a single YAML file
 gem 'figaro'
 
+# Web Crawler
+gem 'mechanize'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'faker'
+
+  gem "awesome_print", require:"ap"
+  gem "pry-rails"
+  gem "better_errors"
+  gem "binding_of_caller"
 end
 
 group :development do
