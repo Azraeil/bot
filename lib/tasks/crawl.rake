@@ -14,23 +14,62 @@ namespace :crawl do
 
       # Find all the links on the page that are contained with '[]'
       post_links = page.links.find_all do |link|
-        link.text.include?('[') && (link.text =~ match_pattern) == nil
+        link.text.include?('售') && (link.text =~ match_pattern) == nil
       end
 
       post_links.reverse_each do |link|
+        post = Post.new
         # outer title
-        puts link.text
+        post.title = link.text
+
         # outer date
         post_date = link.attributes.parent.parent.search("div.date").text
-        puts post_date
+
         # outer author
-        puts link.attributes.parent.parent.search("div.author").text
-        if TimeDifference.between(Time.parse(post_date), Time.now).in_weeks > 2
+        post.author = link.attributes.parent.parent.search("div.author").text
+
+        post.url = link.uri
+
+        if TimeDifference.between(Time.parse(post_date), Time.now).in_days > 2
           stop_scan = true
         end
 
+        post_content = link.click
+        if post_content.search("div#main-content").text.include?("時間")
+          post.created_time = post_content.search("div#main-content//span.article-meta-tag:contains('時間')").first.next.text
+        else
+          # user modified the head title
+          post.created_time = post_content.search("div#main-content").text.match(/時間:(.+)/)[1]
+        end
+
+        if post_content.search("span.f2").text.include?("編輯")
+          post.updated_time = post_content.search("div#main-content//span.f2:contains('編輯')").last.text.split(",").last
+        end
+
+        item_content = post_content.search("div#main-content").text
+
+        # process item content
+        if post.title.include?("售")
+          puts "-------start-------"
+          puts item_content.match(/【物品名稱】[：:]\s*(.+)/)[1]
+          puts item_content.match(/【售\s*價】[：:]\D*(\d+)/)[1]
+          puts item_content
+          puts "-------end-------"
+        end
+
+        post.save
+
+      rescue
+        puts "***************格式不符！！！*************************"
+        puts "#{ap $!.backtrace}"
+        puts post.title, "https://www.ptt.cc" + post.url
+        # puts item_content
+        # puts item_content
+        # p item_content
+        # raise $!, $!.message
+        puts "--------------------------------------"
       end
-      puts "end"
+
       scan_url = page.links.find {|link| link.text.include?("上頁")}.uri
     end
   end
