@@ -51,23 +51,25 @@ namespace :crawl do
         # process item content
         if post.title.include?("售")
           puts "-------start-------"
-          puts item_content.match(/【物品名稱】[：:]\s*(.+)/)[1]
-          puts item_content.match(/【售\s*價】[：:]\D*(\d+)/)[1]
-          puts item_content
+          puts item_content.match(/【物品名稱】\s*[：:]*\s*(.+)/)[1]
+          puts item_content.match(/【售\s*價】\s*[：:]*\D*(\d+)/)[1]
+          # puts item_content
           puts "-------end-------"
         end
 
         post.save
 
       rescue
-        puts "***************格式不符！！！*************************"
-        puts "#{ap $!.backtrace}"
-        puts post.title, "https://www.ptt.cc" + post.url
+        puts "*************** 格式不符！！！ *************************"
+        # puts "#{ap $!.backtrace}"
+        # puts post.title, "https://www.ptt.cc" + post.url
+        puts item_content
+        puts $!
         # puts item_content
         # puts item_content
         # p item_content
         # raise $!, $!.message
-        puts "--------------------------------------"
+        puts "**************** rescue end ***********************"
       end
 
       scan_url = page.links.find {|link| link.text.include?("上頁")}.uri
