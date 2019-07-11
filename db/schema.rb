@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_11_041648) do
+ActiveRecord::Schema.define(version: 2019_07_11_041801) do
 
   create_table "posts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "title"
@@ -23,6 +23,8 @@ ActiveRecord::Schema.define(version: 2019_07_11_041648) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "valid_data", default: false
+    t.string "item_name"
+    t.integer "price"
   end
 
 end
