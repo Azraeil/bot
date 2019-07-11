@@ -53,10 +53,9 @@ namespace :crawl do
           puts "-------start-------"
           puts item_content.match(/【物品名稱】\s*[：:]*\s*(.+)/)[1]
           puts item_content.match(/【售\s*價】\s*[：:]*\D*(\d+)/)[1]
-          # puts item_content
           puts "-------end-------"
         end
-
+        post.valid_data = true
         post.save
 
       rescue
