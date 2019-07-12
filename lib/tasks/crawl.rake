@@ -84,7 +84,7 @@ end
 
 def valid_data_check(post)
   # must have key words check
-  if (post.item_content =~ /(?=.*時間)(?=.*【物品名稱】)(?=.*【\s*售\s*價\s*】).*/m) == nil
+  if (post.item_content =~ /(?=.*時間)(?=.*【物品名稱】)(?=.*(?=.*【\s*售\s*　*\s*價\s*】)).*/m) == nil
     puts "key words check false!!!"
     return false
   end
@@ -93,7 +93,7 @@ def valid_data_check(post)
   item_name = post.item_content.match(/【物品名稱】\s*[：:]*\s*(.+)/)[1]
   # puts item_name
 
-  price = post.item_content.match(/【\s*售\s*價\s*】\s*[：:]*\D*(\d+)/)[1]
+  price = post.item_content.match(/(?=.*【\s*售\s*　*\s*價\s*】)\s*[：:]*\D*(\d+)/)[1]
   # puts price
 
   # multi-items check
