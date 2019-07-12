@@ -43,7 +43,7 @@ namespace :crawl do
         puts "\n-------valid_data check start-------"
         if valid_data_check(@post) == true
 
-          if post_page.search("div#main-content//span.article-meta-tag:contains('時間')") != nil
+          if post_page.search("div#main-content//span.article-meta-tag:contains('時間')").empty? != true
             @post.created_time = post_page.search("div#main-content//span.article-meta-tag:contains('時間')").first.next.text
           else
             # user modified the head title
