@@ -18,60 +18,99 @@ namespace :crawl do
       end
 
       post_links.reverse_each do |link|
-        post = Post.new
+        @post = Post.new
         # outer title
-        post.title = link.text
+        @post.title = link.text
 
         # outer date
         post_date = link.attributes.parent.parent.search("div.date").text
 
         # outer author
-        post.author = link.attributes.parent.parent.search("div.author").text
+        @post.author = link.attributes.parent.parent.search("div.author").text
 
-        post.url = link.uri
+        @post.url = link.uri
 
-        if TimeDifference.between(Time.parse(post_date), Time.now).in_days > 2
+        if TimeDifference.between(Time.parse(post_date), Time.now).in_days > 1
           stop_scan = true
         end
 
-        post_content = link.click
-        if post_content.search("div#main-content").text.include?("時間")
-          post.created_time = post_content.search("div#main-content//span.article-meta-tag:contains('時間')").first.next.text
+        post_page = link.click.search("div#main-content")
+
+        # backup string
+        @post.item_content = post_page.text
+
+        # valid data check
+        puts "\n-------valid_data check start-------"
+        if valid_data_check(@post) == true
+
+          if post_page.search("div#main-content//span.article-meta-tag:contains('時間')") != nil
+            @post.created_time = post_page.search("div#main-content//span.article-meta-tag:contains('時間')").first.next.text
+          else
+            # user modified the head title
+            @post.created_time = post_page.text.match(/時間:(.+)/)[1]
+          end
+
+          if post_page.search("span.f2").text.include?("編輯")
+            @post.updated_time = post_page.search("div#main-content//span.f2:contains('編輯')").last.text.split(",").last
+          end
+
+          @post.valid_data = true
+          puts "valid~"
+          puts @post.item_name, @post.price
         else
-          # user modified the head title
-          post.created_time = post_content.search("div#main-content").text.match(/時間:(.+)/)[1]
+          @post.valid_data = false
+          puts "invalid!!!"
+          puts post_page.text
         end
 
-        if post_content.search("span.f2").text.include?("編輯")
-          post.updated_time = post_content.search("div#main-content//span.f2:contains('編輯')").last.text.split(",").last
-        end
+        puts @post.title, "https://www.ptt.cc" + @post.url
+        puts "-------valid_data check end-------"
 
-        item_content = post_content.search("div#main-content").text
-
-        # process item content
-        if post.title.include?("售")
-          puts "-------start-------"
-          puts item_content.match(/【物品名稱】\s*[：:]*\s*(.+)/)[1]
-          puts item_content.match(/【售\s*價】\s*[：:]*\D*(\d+)/)[1]
-          puts "-------end-------"
-        end
-        post.valid_data = true
-        post.save
-
+        @post.save
       rescue
-        puts "*************** 格式不符！！！ *************************"
+        puts "*************** rescue start 格式不符！！！ ***************"
         # puts "#{ap $!.backtrace}"
-        # puts post.title, "https://www.ptt.cc" + post.url
-        puts item_content
-        puts $!
-        # puts item_content
-        # puts item_content
-        # p item_content
-        # raise $!, $!.message
-        puts "**************** rescue end ***********************"
+        # puts $!
+        puts post_page.text
+
+        raise $!, $!.message
+        puts "******************* rescue end *******************"
       end
 
       scan_url = page.links.find {|link| link.text.include?("上頁")}.uri
     end
   end
+end
+
+def valid_data_check(post)
+  # must have key words check
+  if (post.item_content =~ /(?=.*時間)(?=.*【物品名稱】)(?=.*【\s*售\s*價\s*】).*/m) == nil
+    puts "key words check false!!!"
+    return false
+  end
+
+  # process item data
+  item_name = post.item_content.match(/【物品名稱】\s*[：:]*\s*(.+)/)[1]
+  # puts item_name
+
+  price = post.item_content.match(/【\s*售\s*價\s*】\s*[：:]*\D*(\d+)/)[1]
+  # puts price
+
+  # multi-items check
+  # post title, item name and price check
+  exclude_entries = ["\\/", "\\\\", "\\&", "\\+", "\\.", "、", "等", "及", "換"]
+  match_pattern = Regexp.new(exclude_entries.join('|'))
+
+  if (post.title =~ match_pattern) != nil ||
+    (item_name =~ match_pattern) != nil ||
+    price.to_i < 100
+  then
+    puts "multi-items check false!!!"
+    return false
+  else
+    post.item_name = item_name
+    post.price = price
+  end
+
+  return true
 end
