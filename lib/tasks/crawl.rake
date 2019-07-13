@@ -6,7 +6,6 @@ namespace :crawl do
     stop_scan = false
 
     while stop_scan != true
-
       page = agent.get(scan_url)
 
       exclude_entries = ["公告", "黑單", "宣導"]
@@ -16,16 +15,15 @@ namespace :crawl do
       post_links = page.links.find_all do |link|
         link.text.include?('售') && (link.text =~ match_pattern) == nil
       end
-
       post_links.reverse_each do |link|
         @post = Post.new
-        # outer title
+        # outer post title
         @post.title = link.text
 
-        # outer date
+        # outer post date
         post_date = link.attributes.parent.parent.search("div.date").text
 
-        # outer author
+        # outer post author
         @post.author = link.attributes.parent.parent.search("div.author").text
 
         @post.url = link.uri
@@ -55,11 +53,11 @@ namespace :crawl do
           end
 
           @post.valid_data = true
-          puts "valid~"
+          puts "valid data~"
           puts @post.item_name, @post.price
         else
           @post.valid_data = false
-          puts "invalid!!!"
+          puts "invalid data!!!"
           puts post_page.text
         end
 
@@ -67,6 +65,7 @@ namespace :crawl do
         puts "-------valid_data check end-------"
 
         @post.save
+
       rescue
         puts "*************** rescue start 格式不符！！！ ***************"
         # puts "#{ap $!.backtrace}"
@@ -98,14 +97,22 @@ def valid_data_check(post)
 
   # multi-items check
   # post title, item name and price check
-  exclude_entries = ["\\/", "\\\\", "\\&", "\\+", "\\.", "、", "等", "及", "換"]
+  exclude_entries = ["\\/", "\\\\", "\\&", "\\+", "\\.", "、", "等", "及", "換", "徵"]
   match_pattern = Regexp.new(exclude_entries.join('|'))
+
+  # 物品名稱, 售價 multi-lines check
+  item_name_lines = post.item_content.split("【物品名稱】")[1].split("【")[0].count("\n")
+  price_lines = post.item_content.split(/價\s*】/)[1].split("【")[0].count("\n")
+  multi_lines_check = true if (item_name_lines + price_lines) > 4
+
+  puts "item_name_lines = #{item_name_lines}, price_lines = #{price_lines}"
 
   if (post.title =~ match_pattern) != nil ||
     (item_name =~ match_pattern) != nil ||
-    price.to_i < 100
+    price.to_i < 100 ||
+    multi_lines_check == true
   then
-    puts "multi-items check false!!!"
+    puts "exclude_entries, multi-items or invalid price found!!!"
     return false
   else
     post.item_name = item_name
