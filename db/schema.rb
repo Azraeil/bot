@@ -10,6 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 2019_09_23_025939) do
+
+  create_table "posts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "title"
+    t.string "author"
+    t.string "url"
+    t.string "gaming_platform"
+    t.string "status"
+    t.timestamp "created_time"
+    t.timestamp "updated_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "valid_data", default: false
+    t.string "item_name"
+    t.integer "price"
+    t.text "item_content"
+    t.boolean "need_rescue", default: false
+    t.text "rescue_message"
+  end
 
 end

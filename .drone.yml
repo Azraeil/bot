@@ -29,6 +29,11 @@ steps:
   - bundle -v
   # bundle 檔案位置指定在 /usr/local/bundle
   - bundle check --path=/tmp/cache/bundle || bundle install --path=/tmp/cache/bundle --jobs=4 --retry=3
+
+  # config
+  - cp config/database.ci.yml config/database.yml
+
+  # setup secrets and db migration
   - bundle exec rails -v
   - bundle exec rake db:create db:migrate --trace
 
@@ -44,6 +49,7 @@ steps:
   commands:
   - gem install bundler
   - bundle check --path=/tmp/cache/bundle || bundle install --path=/tmp/cache/bundle --jobs=4 --retry=3
+
   - bundle exec rails -v
   - echo $RAILS_ENV
   - echo $RAKE_ENV
