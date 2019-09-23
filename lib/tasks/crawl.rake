@@ -1,3 +1,5 @@
+desc "A task used for crawling ptt web"
+
 namespace :crawl do
   desc "A task used for crawling ptt web"
   task :get_post => :environment do
