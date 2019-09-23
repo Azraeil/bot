@@ -40,7 +40,7 @@ namespace :crawl do
         # valid data check
         puts "\n-------valid_data check start-------"
         if valid_data_check(@post) == true
-
+          # check time format
           if post_page.search("div#main-content//span.article-meta-tag:contains('時間')").empty? != true
             @post.created_time = post_page.search("div#main-content//span.article-meta-tag:contains('時間')").first.next.text
           else
@@ -64,18 +64,14 @@ namespace :crawl do
         puts @post.title, "https://www.ptt.cc" + @post.url
         puts "-------valid_data check end-------"
 
-        @post.save
-
       rescue
-        puts "*************** rescue start 格式不符！！！ ***************"
-        # puts "#{ap $!.backtrace}"
-        # puts $!
-        puts post_page.text
-
-        raise $!, $!.message
-        puts "******************* rescue end *******************"
+        # puts post_page.text
+        # raise $!, $!.message
+        @post.need_rescue = true
+        @post.rescue_message = $!.message
       end
 
+      @post.save
       scan_url = page.links.find {|link| link.text.include?("上頁")}.uri
     end
   end
@@ -95,12 +91,11 @@ def valid_data_check(post)
   price = post.item_content.match(/(?=.*【\s*售\s*　*\s*價\s*】)\s*[：:]*\D*(\d+)/)[1]
   # puts price
 
-  # multi-items check
-  # post title, item name and price check
+  # multi-items check: post title, item name and price check
   exclude_entries = ["\\/", "\\\\", "\\&", "\\+", "\\.", "、", "等", "及", "換", "徵"]
   match_pattern = Regexp.new(exclude_entries.join('|'))
 
-  # 物品名稱, 售價 multi-lines check
+  # use line numbers between item_name and price to check multi-items or not
   item_name_lines = post.item_content.split("【物品名稱】")[1].split("【")[0].count("\n")
   price_lines = post.item_content.split(/價\s*】/)[1].split("【")[0].count("\n")
   multi_lines_check = true if (item_name_lines + price_lines) > 4
